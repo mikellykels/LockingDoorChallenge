@@ -9,6 +9,8 @@
 #include "InputMappingContext.h"
 #include "LDPlayerController.generated.h"
 
+class ALDKey;
+
 /**
  * 
  */
@@ -33,6 +35,10 @@ class GMCHALLENGE_API ALDPlayerController : public APlayerController
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	/** Interact Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* InteractAction;
+
 public:
 	ALDPlayerController();
 
@@ -43,7 +49,19 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+	/** Called for interact input */
+	void OnInteractTriggered(const FInputActionValue& Value);
+	void OnInteractReleased(const FInputActionValue& Value);
+
 	virtual void SetupInputComponent() override;
 
 	virtual void BeginPlay() override;
+
+public:
+	virtual void Tick(float DeltaTime) override;
+
+private:
+	bool bInteractInput = false;
+
+	ALDKey* LastInteractedKey = nullptr;
 };
