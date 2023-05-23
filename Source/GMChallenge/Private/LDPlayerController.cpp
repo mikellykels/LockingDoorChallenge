@@ -36,7 +36,7 @@ void ALDPlayerController::Tick(float DeltaTime)
     // Define the start and end points of the line trace.
     FVector Start = GetCharacter()->GetActorLocation();
     FVector ForwardVector = GetCharacter()->GetActorForwardVector();
-    FVector End = Start + ForwardVector * 500.f; // 500 is the reach of the interaction. Adjust as necessary.
+    FVector End = Start + ForwardVector * 400.0f;
 
     FHitResult HitResult;
     GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECollisionChannel::ECC_Visibility);
@@ -64,7 +64,7 @@ void ALDPlayerController::Tick(float DeltaTime)
         // If the interact button is pressed, call the OnInteract function.
         if (bInteractInput)
         {
-          IInteractable::Execute_OnInteract(HitResult.GetActor(), this);
+          IInteractable::Execute_OnInteract(HitResult.GetActor(), GetCharacter());
         }
       }
     }
@@ -140,7 +140,6 @@ void ALDPlayerController::Look(const FInputActionValue& Value)
 
 void ALDPlayerController::OnInteractTriggered(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Interact"));
 	bInteractInput = true;
 }
 

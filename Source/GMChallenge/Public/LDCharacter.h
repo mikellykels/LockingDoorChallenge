@@ -7,6 +7,9 @@
 #include "InputActionValue.h"
 #include "LDCharacter.generated.h"
 
+class ALDKey;
+class UInventoryComponent;
+class UInventoryWidget;
 
 UCLASS()
 class ALDCharacter : public ACharacter
@@ -35,6 +38,18 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	/** Inventory component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Inventory)
+	UInventoryComponent* InventoryComponent;
+
+	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
+
+	void PickupKey(ALDKey* Key);
+
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+private:
+	UPROPERTY(EditAnywhere, Category = UI)
+	TSubclassOf<UInventoryWidget> InventoryWidgetClass;
 };

@@ -2,6 +2,8 @@
 
 
 #include "LDKey.h"
+#include "LDCharacter.h"
+#include "InventoryComponent.h"
 #include "InteractionWidgetComponent.h"
 #include "InteractionPromptWidget.h"
 
@@ -30,8 +32,12 @@ void ALDKey::BeginPlay()
 		UInteractionPromptWidget* Widget = Cast<UInteractionPromptWidget>(InteractionWidgetComponent->GetUserWidgetObject());
 		if (Widget)
 		{
+			FKeyType KeyTypeProperties = GetKeyTypeProperties();
+			Widget->SetKeyDisplayName(KeyTypeProperties.KeyDisplayName, KeyTypeProperties.KeyColor);
+
 			Widget->SetVisibility(ESlateVisibility::Hidden);
 			Widget->SetPromptText(FText::FromString("Press 'E' to pickup"));
+
 		}
 	}
 }
@@ -39,7 +45,6 @@ void ALDKey::BeginPlay()
 void ALDKey::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-	UE_LOG(LogTemp, Warning, TEXT("ALDKey instance ending play."));
 }
 
 // Called every frame
@@ -51,14 +56,20 @@ void ALDKey::Tick(float DeltaTime)
 
 void ALDKey::OnInteract_Implementation(AActor* Caller)
 {
-	UE_LOG(LogTemp, Warning, TEXT("On Interact in Key"));
-	HidePrompt();
+	if (ALDCharacter* Character = Cast<ALDCharacter>(Caller))
+	{
+		if (Character->InventoryComponent->PickupKey(this))
+		{
+			HidePrompt();
 
-	// This will hide the actor in the game when interacted with
-	this->SetActorHiddenInGame(true);
+			// This will hide the actor in the game when interacted with
+			this->SetActorHiddenInGame(true);
 
-	// Disable the actor's collision
-	this->SetActorEnableCollision(false);
+			// Disable the actor's collision
+			this->SetActorEnableCollision(false);
+			Character->PickupKey(this);
+		}
+	}
 }
 
 void ALDKey::ShowPrompt()
@@ -85,5 +96,15 @@ void ALDKey::HidePrompt()
 			Widget->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
+}
+
+FKeyType ALDKey::GetKeyTypeProperties() const
+{
+	if (KeyTypes)
+	{
+		return *KeyTypes->FindRow<FKeyType>(KeyType, "");
+	}
+
+	return FKeyType();
 }
 

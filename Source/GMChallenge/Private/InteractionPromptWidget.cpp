@@ -2,12 +2,23 @@
 
 
 #include "InteractionPromptWidget.h"
+#include "Styling/SlateColor.h"
 
 void UInteractionPromptWidget::SetPromptText(const FText& Text)
 {
 	if (PromptText)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Set prompt text widget"));
 		PromptText->SetText(Text);
 	}
+}
+
+void UInteractionPromptWidget::SetKeyDisplayName(FText DisplayName, FColor Color)
+{
+	KeyDisplayNameTextBlock->SetText(DisplayName);
+
+	FLinearColor LinearColor = FLinearColor(Color);
+	LinearColor.A = 1.0f;
+
+	FSlateColor KeyColor(LinearColor);
+	KeyDisplayNameTextBlock->SetColorAndOpacity(KeyColor);
 }
