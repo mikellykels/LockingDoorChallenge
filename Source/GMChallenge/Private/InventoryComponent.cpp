@@ -29,6 +29,30 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+bool UInventoryComponent::CanOpenDoor(const FDoorType& DoorType) const
+{
+	for (FName KeyType : DoorType.RequiredKeys)
+	{
+		if (!Inventory.Contains(KeyType) || Inventory[KeyType] <= 0)
+		{
+			// If any required key is not in the inventory, or if the count of the key is 0,
+			// then return false.
+			return false;
+		}
+	}
+	// If we have made it past the for loop, then all required keys are present in the inventory.
+	return true;
+}
+
+void UInventoryComponent::UseKey(FName KeyType)
+{
+	if (Inventory.Contains(KeyType) && Inventory[KeyType] > 0)
+	{
+		Inventory[KeyType]--;
+		OnInventoryChanged.Broadcast();
+	}
+}
+
 bool UInventoryComponent::PickupKey(ALDKey* Key)
 {
 	if (Key)

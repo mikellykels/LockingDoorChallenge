@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Interactable.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "LDCharacter.generated.h"
@@ -12,7 +13,7 @@ class UInventoryComponent;
 class UInventoryWidget;
 
 UCLASS()
-class ALDCharacter : public ACharacter
+class ALDCharacter : public ACharacter, public IInteractable
 {
 	GENERATED_BODY()
 
@@ -31,6 +32,11 @@ class ALDCharacter : public ACharacter
 
 public:
 	ALDCharacter();
+
+	virtual void OnInteract_Implementation(AActor* Caller) override;
+	virtual void ShowPrompt_Implementation() override;
+	virtual void HidePrompt_Implementation() override;
+	virtual TArray<FName> GetInventory_Implementation() const override;
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -52,4 +58,9 @@ protected:
 private:
 	UPROPERTY(EditAnywhere, Category = UI)
 	TSubclassOf<UInventoryWidget> InventoryWidgetClass;
+
+	UInventoryWidget* InventoryWidget;
+
+	UPROPERTY()
+	TArray<FName> Inventory;
 };

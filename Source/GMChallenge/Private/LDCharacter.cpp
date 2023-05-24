@@ -59,8 +59,26 @@ void ALDCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void ALDCharacter::PickupKey(ALDKey* Key)
 {
-	UInventoryWidget* InventoryWidget = CreateWidget<UInventoryWidget>(GetWorld(), InventoryWidgetClass);
+	InventoryWidget = CreateWidget<UInventoryWidget>(GetWorld(), InventoryWidgetClass);
 	InventoryWidget->SetInventoryComponent(InventoryComponent);
 	InventoryWidget->AddToViewport();
+}
+
+void ALDCharacter::OnInteract_Implementation(AActor* Caller)
+{
+}
+
+void ALDCharacter::ShowPrompt_Implementation()
+{
+}
+
+void ALDCharacter::HidePrompt_Implementation()
+{
+}
+
+TArray<FName> ALDCharacter::GetInventory_Implementation() const
+{
+	// TODO: insert return statement here
+	return Inventory;
 }
 

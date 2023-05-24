@@ -44,6 +44,12 @@ void UInventoryWidget::UpdateInventory()
       FName KeyType = KeyPair.Key;
       int32 KeyCount = KeyPair.Value;
 
+      // Skip this key if there are none left in the inventory
+      if (KeyCount <= 0)
+      {
+        continue;
+      }
+
       UDataTable* KeyTypes = GetWorld()->GetGameState<ALDGameStateBase>()->KeyTypes;
 
       static const FString ContextString(TEXT("KeyTypes context"));

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "LDDoor.h"
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
@@ -27,6 +28,9 @@ public:
 	}
 
 	FInventoryChangedDelegate OnInventoryChanged;
+
+	bool CanOpenDoor(const FDoorType& DoorType) const;
+	void UseKey(FName KeyType);
 
 protected:
 	// Called when the game starts

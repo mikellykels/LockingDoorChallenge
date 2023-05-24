@@ -51,7 +51,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void OnInteract_Implementation(AActor* Caller) override;
-
-	void ShowPrompt();
-	void HidePrompt();
+	virtual void ShowPrompt_Implementation() override;
+	virtual void HidePrompt_Implementation() override;
+	virtual TArray<FName> GetInventory_Implementation() const override;
 };

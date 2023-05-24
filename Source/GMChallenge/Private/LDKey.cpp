@@ -60,7 +60,7 @@ void ALDKey::OnInteract_Implementation(AActor* Caller)
 	{
 		if (Character->InventoryComponent->PickupKey(this))
 		{
-			HidePrompt();
+			HidePrompt_Implementation();
 
 			// This will hide the actor in the game when interacted with
 			this->SetActorHiddenInGame(true);
@@ -72,7 +72,7 @@ void ALDKey::OnInteract_Implementation(AActor* Caller)
 	}
 }
 
-void ALDKey::ShowPrompt()
+void ALDKey::ShowPrompt_Implementation()
 {
 	// Make sure the widget component is valid before trying to hide it
 	if (IsValid(InteractionWidgetComponent))
@@ -85,7 +85,7 @@ void ALDKey::ShowPrompt()
 	}
 }
 
-void ALDKey::HidePrompt()
+void ALDKey::HidePrompt_Implementation()
 {
 	// Make sure the widget component is valid before trying to show it
 	if (IsValid(InteractionWidgetComponent))
@@ -96,6 +96,11 @@ void ALDKey::HidePrompt()
 			Widget->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
+}
+
+TArray<FName> ALDKey::GetInventory_Implementation() const
+{
+	return TArray<FName>();
 }
 
 FKeyType ALDKey::GetKeyTypeProperties() const

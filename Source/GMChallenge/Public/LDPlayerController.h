@@ -10,6 +10,7 @@
 #include "LDPlayerController.generated.h"
 
 class ALDKey;
+class ALDDoor;
 
 /**
  * 
@@ -62,6 +63,14 @@ public:
 
 private:
 	bool bInteractInput = false;
+	float InteractionDistance = 300.0f;
 
 	ALDKey* LastInteractedKey = nullptr;
+	ALDDoor* CurrentDoor = nullptr;
+
+	FHitResult PerformLineTrace();
+	void HandleKeyInteraction(const FHitResult& HitResult);
+	void HandleDoorInteraction(const FHitResult& HitResult);
+	void HideKeyInteractionPrompt();
+	void HideDoorInteractionPrompt();
 };
