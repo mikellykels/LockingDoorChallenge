@@ -16,7 +16,7 @@ ALDDoor::ALDDoor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	//** Door frame mesh**//
+	//** Door frame mesh **//
 	DoorFrameMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorFrameMesh"));
 	DoorFrameMeshComponent->SetupAttachment(RootComponent);
 
@@ -29,7 +29,7 @@ ALDDoor::ALDDoor()
 	DoorInteractionWidgetComponent->SetupAttachment(DoorMeshComponent);
 	DoorInteractionWidgetComponent->SetWidgetClass(DoorInteractionWidgetClass);
 
-	// ** Door timeline
+	// ** Door timeline ** //
 	DoorTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DoorTimeline"));
 
 }
@@ -45,7 +45,7 @@ void ALDDoor::BeginPlay()
 		if (DoorWidget)
 		{
 			DoorWidget->SetVisibility(ESlateVisibility::Hidden);
-			DoorWidget->SetPromptText(FText::FromString("Press 'E' to open"));
+			DoorWidget->SetPromptText(FText::FromString("Press 'E' to interact"));
 
 		}
 	}
@@ -85,13 +85,53 @@ void ALDDoor::OnInteract_Implementation(AActor* Caller)
 			{
 				Character->InventoryComponent->UseKey(KeyType);
 			}
+
+			// If the player has the required keys, set the text color to white
+			UDoorInteractionWidget* DoorWidget = Cast<UDoorInteractionWidget>(DoorInteractionWidgetComponent->GetUserWidgetObject());
+			if (DoorWidget)
+			{
+				DoorWidget->SetPromptText(FText::FromString("Press 'E' to interact"));
+				DoorWidget->SetPromptTextColor(FColor::White);
+			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Does not have required keys"));
 			if (bIsDoorOpen)
 			{
 				OpenDoor();
+			}
+			else
+			{
+				// Get the count of required keys
+				int32 KeyCount = DoorTypeProperties.RequiredKeys.Num();
+
+				// Create custom message
+				FString Message;
+				if (KeyCount == 1)
+				{
+					Message = FString::Printf(TEXT("Needs %d %s key"),
+						KeyCount, *DoorTypeProperties.DoorName.ToString());
+				}
+				else // more than one key needed
+				{
+					FString KeyNames = "";
+					for (int i = 0; i < KeyCount; i++)
+					{
+						KeyNames += DoorTypeProperties.RequiredKeys[i].ToString();
+						if (i < KeyCount - 1)
+						{
+							KeyNames += ", ";
+						}
+					}
+					Message = FString::Printf(TEXT("Needs %d keys: %s"), KeyCount, *KeyNames);
+				}
+				// Set the UI prompt to the custom message
+				UDoorInteractionWidget* DoorWidget = Cast<UDoorInteractionWidget>(DoorInteractionWidgetComponent->GetUserWidgetObject());
+				if (DoorWidget && !bIsDoorOpen)
+				{
+					DoorWidget->SetPromptText(FText::FromString(Message));
+					DoorWidget->SetPromptTextColor(FColor::Red);
+				}
 			}
 		}
 	}

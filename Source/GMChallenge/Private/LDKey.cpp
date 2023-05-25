@@ -20,6 +20,7 @@ ALDKey::ALDKey()
 	InteractionWidgetComponent->SetupAttachment(RootComponent);
 	InteractionWidgetComponent->SetWidgetClass(UInteractionPromptWidget::StaticClass());
 
+	RotationSpeed = 90.0f;
 }
 
 // Called when the game starts or when spawned
@@ -51,6 +52,12 @@ void ALDKey::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ALDKey::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// Create a rotation in yaw.
+	FRotator Rotation = FRotator(0, RotationSpeed * DeltaTime, 0);
+
+	// Rotate the actor.
+	AddActorLocalRotation(Rotation);
 
 }
 

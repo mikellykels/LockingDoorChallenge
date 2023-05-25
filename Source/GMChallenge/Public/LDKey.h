@@ -35,6 +35,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Key")
 	FName GetKeyType() const { return KeyType; }
 
+	UPROPERTY(EditAnywhere, Category = "Rotation")
+	float RotationSpeed = 0.0f;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

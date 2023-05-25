@@ -20,5 +20,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* PromptText;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetPromptTextColor(FColor Color);
+
 	void SetPromptText(const FText& Text);
 };
