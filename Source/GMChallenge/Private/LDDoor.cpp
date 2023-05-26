@@ -24,13 +24,23 @@ ALDDoor::ALDDoor()
 	DoorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorMesh"));
 	DoorMeshComponent->SetupAttachment(DoorFrameMeshComponent);
 
-	//** Door interaction widget **//
-	DoorInteractionWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("DoorInteractionWidget"));
-	DoorInteractionWidgetComponent->SetupAttachment(DoorMeshComponent);
-	DoorInteractionWidgetComponent->SetWidgetClass(DoorInteractionWidgetClass);
+	//** Door interaction widget front **//
+	DoorInteractionWidgetComponentFront = CreateDefaultSubobject<UWidgetComponent>(TEXT("DoorInteractionWidgetFront"));
+	DoorInteractionWidgetComponentFront->SetupAttachment(DoorMeshComponent);
+	DoorInteractionWidgetComponentFront->SetWidgetClass(DoorInteractionWidgetClass);
+
+	//** Door interaction widget back **//
+	DoorInteractionWidgetComponentBack = CreateDefaultSubobject<UWidgetComponent>(TEXT("DoorInteractionWidgetBack"));
+	DoorInteractionWidgetComponentBack->SetupAttachment(DoorMeshComponent);
+	DoorInteractionWidgetComponentBack->SetWidgetClass(DoorInteractionWidgetClass);
 
 	// ** Door timeline ** //
 	DoorTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DoorTimeline"));
+
+	OpeningDirection = 1.0f;
+
+	CurrentPromptText = FText::GetEmpty();
+	CurrentPromptColor = FColor::White;
 
 }
 
@@ -39,16 +49,9 @@ void ALDDoor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (DoorInteractionWidgetComponent)
-	{
-		UDoorInteractionWidget* DoorWidget = Cast<UDoorInteractionWidget>(DoorInteractionWidgetComponent->GetUserWidgetObject());
-		if (DoorWidget)
-		{
-			DoorWidget->SetVisibility(ESlateVisibility::Hidden);
-			DoorWidget->SetPromptText(FText::FromString("Press 'E' to interact"));
-
-		}
-	}
+	// Set up the widgets
+	SetupDoorInteractionWidget(DoorInteractionWidgetComponentFront);
+	SetupDoorInteractionWidget(DoorInteractionWidgetComponentBack);
 
 	if (DoorOpenFloatCurve)
 	{
@@ -75,92 +78,68 @@ void ALDDoor::OnInteract_Implementation(AActor* Caller)
 	if (ALDCharacter* Character = Cast<ALDCharacter>(Caller))
 	{
 		FDoorType DoorTypeProperties = GetDoorTypeProperties();
-		if (Character->InventoryComponent->CanOpenDoor(DoorTypeProperties))
+		if (bIsUnlocked || Character->InventoryComponent->CanOpenDoor(DoorTypeProperties))
 		{
 			// Open the door
-			OpenDoor();
+			OpenDoor(Caller);
 
-			// Remove key from inventory
-			for (FName KeyType : DoorTypeProperties.RequiredKeys)
+			// If the door was locked, remove key from inventory and set the door to unlocked
+			if (!bIsUnlocked)
 			{
-				Character->InventoryComponent->UseKey(KeyType);
+				for (FName KeyType : DoorTypeProperties.RequiredKeys)
+				{
+					Character->InventoryComponent->UseKey(KeyType);
+				}
+				bIsUnlocked = true; // Set the door to unlocked
 			}
 
 			// If the player has the required keys, set the text color to white
-			UDoorInteractionWidget* DoorWidget = Cast<UDoorInteractionWidget>(DoorInteractionWidgetComponent->GetUserWidgetObject());
-			if (DoorWidget)
-			{
-				DoorWidget->SetPromptText(FText::FromString("Press 'E' to interact"));
-				DoorWidget->SetPromptTextColor(FColor::White);
-			}
+			UpdateDoorInteractionWidget(DoorInteractionWidgetComponentFront, ESlateVisibility::Visible, FText::FromString("Press 'E' to interact"), FColor::White);
+			UpdateDoorInteractionWidget(DoorInteractionWidgetComponentBack, ESlateVisibility::Visible, FText::FromString("Press 'E' to interact"), FColor::White);
 		}
 		else
 		{
-			if (bIsDoorOpen)
-			{
-				OpenDoor();
-			}
-			else
-			{
-				// Get the count of required keys
-				int32 KeyCount = DoorTypeProperties.RequiredKeys.Num();
+			// If the player does not have the required keys, update the message
+			// Get the count of required keys
+			int32 KeyCount = DoorTypeProperties.RequiredKeys.Num();
 
-				// Create custom message
-				FString Message;
-				if (KeyCount == 1)
-				{
-					Message = FString::Printf(TEXT("Needs %d %s key"),
-						KeyCount, *DoorTypeProperties.DoorName.ToString());
-				}
-				else // more than one key needed
-				{
-					FString KeyNames = "";
-					for (int i = 0; i < KeyCount; i++)
-					{
-						KeyNames += DoorTypeProperties.RequiredKeys[i].ToString();
-						if (i < KeyCount - 1)
-						{
-							KeyNames += ", ";
-						}
-					}
-					Message = FString::Printf(TEXT("Needs %d keys: %s"), KeyCount, *KeyNames);
-				}
-				// Set the UI prompt to the custom message
-				UDoorInteractionWidget* DoorWidget = Cast<UDoorInteractionWidget>(DoorInteractionWidgetComponent->GetUserWidgetObject());
-				if (DoorWidget && !bIsDoorOpen)
-				{
-					DoorWidget->SetPromptText(FText::FromString(Message));
-					DoorWidget->SetPromptTextColor(FColor::Red);
-				}
+			// Create custom message
+			FString Message;
+			if (KeyCount == 1)
+			{
+				Message = FString::Printf(TEXT("Needs %d %s key"),
+					KeyCount, *DoorTypeProperties.DoorName.ToString());
 			}
+			else // more than one key needed
+			{
+				FString KeyNames = "";
+				for (int i = 0; i < KeyCount; i++)
+				{
+					KeyNames += DoorTypeProperties.RequiredKeys[i].ToString();
+					if (i < KeyCount - 1)
+					{
+						KeyNames += ", ";
+					}
+				}
+				Message = FString::Printf(TEXT("Needs %d keys: %s"), KeyCount, *KeyNames);
+			}
+			// Set the UI prompt to the custom message
+			UpdateDoorInteractionWidget(DoorInteractionWidgetComponentFront, ESlateVisibility::Visible, FText::FromString(Message), FColor::Red);
+			UpdateDoorInteractionWidget(DoorInteractionWidgetComponentBack, ESlateVisibility::Visible, FText::FromString(Message), FColor::Red);
 		}
 	}
 }
 
 void ALDDoor::ShowPrompt_Implementation()
 {
-	// Make sure the widget component is valid before trying to hide it
-	if (IsValid(DoorInteractionWidgetComponent))
-	{
-		UDoorInteractionWidget* DoorWidget = Cast<UDoorInteractionWidget>(DoorInteractionWidgetComponent->GetUserWidgetObject());
-		if (IsValid(DoorWidget))
-		{
-			DoorWidget->SetVisibility(ESlateVisibility::Visible);
-		}
-	}
+	UpdateDoorInteractionWidget(DoorInteractionWidgetComponentFront, ESlateVisibility::Visible, CurrentPromptText, CurrentPromptColor);
+	UpdateDoorInteractionWidget(DoorInteractionWidgetComponentBack, ESlateVisibility::Visible, CurrentPromptText, CurrentPromptColor);
 }
 
 void ALDDoor::HidePrompt_Implementation()
 {
-	// Make sure the widget component is valid before trying to show it
-	if (IsValid(DoorInteractionWidgetComponent))
-	{
-		UDoorInteractionWidget* DoorWidget = Cast<UDoorInteractionWidget>(DoorInteractionWidgetComponent->GetUserWidgetObject());
-		if (IsValid(DoorWidget))
-		{
-			DoorWidget->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}
+	UpdateDoorInteractionWidget(DoorInteractionWidgetComponentFront, ESlateVisibility::Hidden, CurrentPromptText, CurrentPromptColor);
+	UpdateDoorInteractionWidget(DoorInteractionWidgetComponentBack, ESlateVisibility::Hidden, CurrentPromptText, CurrentPromptColor);
 }
 
 TArray<FName> ALDDoor::GetInventory_Implementation() const
@@ -190,25 +169,107 @@ void ALDDoor::OnTimelineFloat(float Value)
 {
 	if (DoorMeshComponent)
 	{
-		FRotator NewRotation = DoorMeshComponent->GetRelativeRotation();
-		NewRotation.Yaw = FMath::Lerp(0.0f, 90.0f, Value);
+		// Calculate the new rotation value and set the actor rotation
+		float DoorAngle = FMath::Lerp(DoorCloseAngle, DoorOpenAngle, Value);
+		FRotator NewRotation = GetActorRotation();
+		NewRotation.Yaw = DoorAngle;
 		DoorMeshComponent->SetRelativeRotation(NewRotation);
 	}
 }
 
-void ALDDoor::OpenDoor()
+void ALDDoor::OpenDoor(AActor* Interactor)
 {
-	if (!bIsDoorOpen) // If the door is not open, open it.
+	UE_LOG(LogTemp, Warning, TEXT("OPEN DOOR"));
+	if (bIsPlayingTimeline)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Open door"));
-		bIsDoorOpen = true; // toggle door state
-		DoorTimeline->PlayFromStart();
+		UE_LOG(LogTemp, Warning, TEXT("bIsPlayingTimeline"));
+		return;
 	}
-	else // If the door is open, close it.
+
+	bIsPlayingTimeline = true;
+
+	// Get the vector from the door to the player.
+	FVector DoorToPlayer =  Interactor->GetActorLocation() - GetActorLocation();
+
+	// Get the forward vector of the door.
+	FVector DoorForward = GetActorForwardVector();
+
+	// Use the dot product to determine if the player is in front of or behind the door.
+	float DotProduct = FVector::DotProduct(DoorToPlayer, DoorForward);
+	UE_LOG(LogTemp, Warning, TEXT("DotProduct: %f"), DotProduct);
+	if (DotProduct > 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Close door"));
-		bIsDoorOpen = false;
+		// Player is in front of the door.
+		OpeningDirection = 1.0f;
+	}
+	else
+	{
+		// Player is behind the door.
+		OpeningDirection = -1.0f;
+	}
+
+	// Set the rotation values
+	DoorOpenAngle = OpeningDirection * 90.f;
+	DoorCloseAngle = 0.0f;
+	//DoorCloseAngle = -DoorOpenAngle;
+
+	// Add the timeline events
+	InterpFunction.BindUFunction(this, FName("OnTimelineFloat"));
+	TimelineFinished.BindUFunction(this, FName("OnTimelineEnd"));
+
+	DoorTimeline->AddInterpFloat(DoorOpenFloatCurve, InterpFunction, FName("Alpha"));
+	DoorTimeline->SetTimelineFinishedFunc(TimelineFinished);
+
+	if (bIsDoorOpen)
+	{
+		// Reverse the timeline if the door is already open
 		DoorTimeline->ReverseFromEnd();
 	}
+	else
+	{
+		// Start the timeline if the door is closed
+		DoorTimeline->PlayFromStart();
+	}
+	bIsDoorOpen = !bIsDoorOpen;
+}
+
+void ALDDoor::SetupDoorInteractionWidget(UWidgetComponent* WidgetComponent)
+{
+	if (WidgetComponent)
+	{
+		UDoorInteractionWidget* DoorWidget = Cast<UDoorInteractionWidget>(WidgetComponent->GetUserWidgetObject());
+		if (DoorWidget)
+		{
+			DoorWidget->SetVisibility(ESlateVisibility::Hidden);
+			DoorWidget->SetPromptText(FText::FromString("Press 'E' to interact"));
+		}
+	}
+}
+
+void ALDDoor::UpdateDoorInteractionWidget(UWidgetComponent* WidgetComponent, ESlateVisibility Visibility, FText Text, FColor Color)
+{
+	if (IsValid(WidgetComponent))
+	{
+		UDoorInteractionWidget* DoorWidget = Cast<UDoorInteractionWidget>(WidgetComponent->GetUserWidgetObject());
+		if (IsValid(DoorWidget))
+		{
+			DoorWidget->SetVisibility(Visibility);
+			if (!Text.IsEmpty()) // Only update the text if it's not empty
+			{
+				CurrentPromptText = Text;
+				DoorWidget->SetPromptText(Text);
+			}
+			if (Color != FColor::Black)
+			{
+				CurrentPromptColor = Color;
+				DoorWidget->SetPromptTextColor(Color);
+			}
+		}
+	}
+}
+
+void ALDDoor::OnTimelineEnd()
+{
+	bIsPlayingTimeline = false;
 }
 

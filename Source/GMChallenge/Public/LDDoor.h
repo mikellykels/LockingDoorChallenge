@@ -31,15 +31,10 @@ class GMCHALLENGE_API ALDDoor : public AActor, public IInteractable
 {
 	GENERATED_BODY()
 	
-public:	
+public:
 	// Sets default values for this actor's properties
 	ALDDoor();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -49,28 +44,42 @@ public:
 	virtual void HidePrompt_Implementation() override;
 	virtual TArray<FName> GetInventory_Implementation() const override;
 
+	// Door interaction widget component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+	UWidgetComponent* DoorInteractionWidgetComponentFront;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+	UWidgetComponent* DoorInteractionWidgetComponentBack;
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UDoorInteractionWidget> DoorInteractionWidgetClass;
+
+	UFUNCTION(BlueprintCallable, Category = "Door")
+	FDoorType GetDoorTypeProperties() const;
+
+	UFUNCTION()
+	void OnTimelineFloat(float Value);
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	// Stores the current prompt text of the door interaction widgets
+	FText CurrentPromptText;
+
+	// Stores the current color of the door interaction widgets
+	FColor CurrentPromptColor;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 	UStaticMeshComponent* DoorFrameMeshComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 	UStaticMeshComponent* DoorMeshComponent;
 
-	// Door interaction widget component
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UWidgetComponent* DoorInteractionWidgetComponent;
-
-	UPROPERTY(EditAnywhere, Category = UI)
-	TSubclassOf<UDoorInteractionWidget> DoorInteractionWidgetClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Door)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door")
 	FName DoorType;
 
-
-	UFUNCTION(BlueprintCallable, Category = Door)
-	FDoorType GetDoorTypeProperties() const;
-
 	// A reference to the DataTable that contains key type properties.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Door)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Door")
 	UDataTable* DoorTypes;
 
 	UPROPERTY(EditAnywhere, Category = Timeline)
@@ -79,20 +88,24 @@ public:
 	FOnTimelineFloat InterpFunction{};
 	FOnTimelineEvent TimelineFinished{};
 
-
 	UPROPERTY()
 	UTimelineComponent* DoorTimeline;
+
+private:
+	void OpenDoor(AActor* Interactor);
+	bool bIsDoorOpen = false;
+	bool bIsUnlocked = false;
+	bool bIsPlayingTimeline = false;
+	float OpeningDirection;
+
+	void SetupDoorInteractionWidget(UWidgetComponent* WidgetComponent);
+	void UpdateDoorInteractionWidget(UWidgetComponent* WidgetComponent, ESlateVisibility Visibility, FText Text, FColor Color);
+
+	void OnTimelineEnd();
 
 	UPROPERTY()
 	float DoorOpenAngle;
 
 	UPROPERTY()
 	float DoorCloseAngle;
-
-	UFUNCTION()
-	void OnTimelineFloat(float Value);
-
-private:
-	void OpenDoor();
-	bool bIsDoorOpen = false;
 };
