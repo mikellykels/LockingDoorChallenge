@@ -37,8 +37,6 @@ ALDDoor::ALDDoor()
 	// ** Door timeline ** //
 	DoorTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DoorTimeline"));
 
-	OpeningDirection = 1.0f;
-
 	CurrentPromptText = FText::GetEmpty();
 	CurrentPromptColor = FColor::White;
 
@@ -59,10 +57,6 @@ void ALDDoor::BeginPlay()
 
 		DoorTimeline->AddInterpFloat(DoorOpenFloatCurve, InterpFunction);
 		DoorTimeline->SetLooping(false);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("OpenCurve is not set in the editor"));
 	}
 }
 
@@ -157,10 +151,6 @@ FDoorType ALDDoor::GetDoorTypeProperties() const
 			return *DoorTypeProperties;
 		}
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("DoorTypes == nullptr"));
-	}
 
 	return FDoorType();
 }
@@ -170,7 +160,7 @@ void ALDDoor::OnTimelineFloat(float Value)
 	if (DoorMeshComponent)
 	{
 		// Calculate the new rotation value and set the actor rotation
-		float DoorAngle = FMath::Lerp(DoorCloseAngle, DoorOpenAngle, Value);
+		float DoorAngle = FMath::Lerp(DoorCloseAngle, FinalDoorOpenAngle, Value);
 		FRotator NewRotation = GetActorRotation();
 		NewRotation.Yaw = DoorAngle;
 		DoorMeshComponent->SetRelativeRotation(NewRotation);
@@ -179,46 +169,41 @@ void ALDDoor::OnTimelineFloat(float Value)
 
 void ALDDoor::OpenDoor(AActor* Interactor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("OPEN DOOR"));
-	if (bIsPlayingTimeline)
+	if (DoorTimeline->IsPlaying())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("bIsPlayingTimeline"));
 		return;
 	}
 
-	bIsPlayingTimeline = true;
-
-	// Get the vector from the door to the player.
-	FVector DoorToPlayer =  Interactor->GetActorLocation() - GetActorLocation();
-
-	// Get the forward vector of the door.
-	FVector DoorForward = GetActorForwardVector();
-
-	// Use the dot product to determine if the player is in front of or behind the door.
-	float DotProduct = FVector::DotProduct(DoorToPlayer, DoorForward);
-	UE_LOG(LogTemp, Warning, TEXT("DotProduct: %f"), DotProduct);
-	if (DotProduct > 0)
+	// Only calculate a new opening angle if the door is currently closed
+	if (!bIsDoorOpen)
 	{
-		// Player is in front of the door.
-		OpeningDirection = 1.0f;
-	}
-	else
-	{
-		// Player is behind the door.
-		OpeningDirection = -1.0f;
-	}
+		// Get the vector from the player to the door.
+		FVector DoorToPlayer = Interactor->GetActorLocation() - GetActorLocation();
 
-	// Set the rotation values
-	DoorOpenAngle = OpeningDirection * 90.f;
-	DoorCloseAngle = 0.0f;
-	//DoorCloseAngle = -DoorOpenAngle;
+		// Normalize DoorToPlayer vector
+		DoorToPlayer.Normalize();
+
+		// Get the forward vector of the door.
+		FVector DoorForward = GetActorForwardVector();
+
+		// Use the dot product to determine if the player is in front of or behind the door.
+		float DotProduct = FVector::DotProduct(DoorForward, DoorToPlayer);
+
+		// Determine the opening direction based on DotProduct
+		OpeningDirection = (DotProduct > 0.0f) ? -1.0f : 1.0f;
+
+		// Calculate the proper angle for the door to open.
+		float OpenAngle = DoorOpenAngle;
+
+		// Set the rotation values
+		FinalDoorOpenAngle = OpeningDirection * OpenAngle;
+		DoorCloseAngle = 0.0f;
+	}
 
 	// Add the timeline events
 	InterpFunction.BindUFunction(this, FName("OnTimelineFloat"));
-	TimelineFinished.BindUFunction(this, FName("OnTimelineEnd"));
 
 	DoorTimeline->AddInterpFloat(DoorOpenFloatCurve, InterpFunction, FName("Alpha"));
-	DoorTimeline->SetTimelineFinishedFunc(TimelineFinished);
 
 	if (bIsDoorOpen)
 	{
@@ -268,8 +253,4 @@ void ALDDoor::UpdateDoorInteractionWidget(UWidgetComponent* WidgetComponent, ESl
 	}
 }
 
-void ALDDoor::OnTimelineEnd()
-{
-	bIsPlayingTimeline = false;
-}
 

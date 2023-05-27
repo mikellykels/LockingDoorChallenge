@@ -82,8 +82,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Door")
 	UDataTable* DoorTypes;
 
-	UPROPERTY(EditAnywhere, Category = Timeline)
+	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* DoorOpenFloatCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door Properties")
+	float DoorOpenAngle = 90.0f;
 
 	FOnTimelineFloat InterpFunction{};
 	FOnTimelineEvent TimelineFinished{};
@@ -95,16 +98,13 @@ private:
 	void OpenDoor(AActor* Interactor);
 	bool bIsDoorOpen = false;
 	bool bIsUnlocked = false;
-	bool bIsPlayingTimeline = false;
-	float OpeningDirection;
+	float OpeningDirection = 1.0f;
 
 	void SetupDoorInteractionWidget(UWidgetComponent* WidgetComponent);
 	void UpdateDoorInteractionWidget(UWidgetComponent* WidgetComponent, ESlateVisibility Visibility, FText Text, FColor Color);
 
-	void OnTimelineEnd();
-
 	UPROPERTY()
-	float DoorOpenAngle;
+	float FinalDoorOpenAngle;
 
 	UPROPERTY()
 	float DoorCloseAngle;
