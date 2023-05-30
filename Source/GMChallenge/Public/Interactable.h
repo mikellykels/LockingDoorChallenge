@@ -22,16 +22,16 @@ class GMCHALLENGE_API IInteractable
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Interact)
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interact")
 	void OnInteract(AActor* Caller);
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Interact)
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interact")
 	void ShowPrompt();
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Interact)
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interact")
 	void HidePrompt();
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Interact)
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interact")
 	TArray<FName> GetInventory() const;
 
 };

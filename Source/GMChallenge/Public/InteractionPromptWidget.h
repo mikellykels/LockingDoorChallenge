@@ -24,6 +24,6 @@ public:
 	
 	void SetPromptText(const FText& Text);
 
-	UFUNCTION(BlueprintCallable, Category = UI)
+	UFUNCTION(BlueprintCallable, Category = "UI")
 	void SetKeyDisplayName(FText DisplayName, FColor Color);
 };

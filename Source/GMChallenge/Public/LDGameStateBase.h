@@ -16,6 +16,6 @@ class GMCHALLENGE_API ALDGameStateBase : public AGameStateBase
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Key)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key")
 	UDataTable* KeyTypes;
 };

@@ -33,7 +33,9 @@ public:
 	UDataTable* KeyTypes;
 
 	UFUNCTION(BlueprintCallable, Category = "Key")
-	FName GetKeyType() const { return KeyType; }
+	FName GetKeyType() const { 
+		return KeyType; 
+	}
 
 	UPROPERTY(EditAnywhere, Category = "Rotation")
 	float RotationSpeed = 0.0f;
@@ -46,7 +48,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* StaticMeshComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Prompt)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Prompt")
 	UInteractionWidgetComponent* InteractionWidgetComponent;
 
 public:	

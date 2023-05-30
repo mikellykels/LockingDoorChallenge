@@ -21,7 +21,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UVerticalBox* KeyList;
 
-	UFUNCTION(BlueprintCallable, Category = UI)
+	UFUNCTION(BlueprintCallable, Category = "UI")
 	void SetInventoryComponent(UInventoryComponent* InventoryComponent);
 
 	UFUNCTION()
