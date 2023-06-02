@@ -11,6 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Interactable.h"
 #include "DrawDebugHelpers.h"
 
@@ -147,6 +148,10 @@ void ALDPlayerController::SetupInputComponent()
     // Looking
     EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ALDPlayerController::Look);
 
+    // Sprint
+    EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &ALDPlayerController::SprintTriggered);
+    EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &ALDPlayerController::SprintReleased);
+
 		// Interact
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ALDPlayerController::OnInteractTriggered);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &ALDPlayerController::OnInteractReleased);
@@ -191,6 +196,28 @@ void ALDPlayerController::Look(const FInputActionValue& Value)
 		LDCharacter->AddControllerYawInput(LookAxisVector.X);
 		LDCharacter->AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void ALDPlayerController::SprintTriggered()
+{
+  UE_LOG(LogTemp, Warning, TEXT("Sprint triggered"));
+  ALDCharacter* LDCharacter = Cast<ALDCharacter>(GetPawn());
+
+  if (LDCharacter != nullptr)
+  {
+    LDCharacter->GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+  }
+}
+
+void ALDPlayerController::SprintReleased()
+{
+  UE_LOG(LogTemp, Warning, TEXT("Sprint released"));
+  ALDCharacter* LDCharacter = Cast<ALDCharacter>(GetPawn());
+
+  if (LDCharacter != nullptr)
+  {
+    LDCharacter->GetCharacterMovement()->MaxWalkSpeed = DefaultSpeed;
+  }
 }
 
 void ALDPlayerController::OnInteractTriggered(const FInputActionValue& Value)

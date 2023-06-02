@@ -36,6 +36,10 @@ class GMCHALLENGE_API ALDPlayerController : public APlayerController
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	/** Sprint Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	UInputAction* SprintAction;
+
 	/** Interact Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	UInputAction* InteractAction;
@@ -50,6 +54,10 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+	/** Called for sprint input */
+	void SprintTriggered();
+	void SprintReleased();
+
 	/** Called for interact input */
 	void OnInteractTriggered(const FInputActionValue& Value);
 	void OnInteractReleased(const FInputActionValue& Value);
@@ -63,6 +71,8 @@ public:
 
 private:
 	bool bInteractInput = false;
+	float DefaultSpeed = 500.0f;
+	float SprintSpeed = 800.0f;
 	float InteractionDistance = 300.0f;
 
 	ALDKey* LastInteractedKey = nullptr;
