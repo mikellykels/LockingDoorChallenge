@@ -39,7 +39,6 @@ ALDDoor::ALDDoor()
 
 	CurrentPromptText = FText::GetEmpty();
 	CurrentPromptColor = FColor::White;
-
 }
 
 // Called when the game starts or when spawned
@@ -64,7 +63,6 @@ void ALDDoor::BeginPlay()
 void ALDDoor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void ALDDoor::OnInteract_Implementation(AActor* Caller)

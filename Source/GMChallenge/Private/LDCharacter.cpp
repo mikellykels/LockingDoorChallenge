@@ -51,7 +51,7 @@ void ALDCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 
-		//Jumping
+		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 	}
@@ -78,7 +78,6 @@ void ALDCharacter::HidePrompt_Implementation()
 
 TArray<FName> ALDCharacter::GetInventory_Implementation() const
 {
-	// TODO: insert return statement here
 	return Inventory;
 }
 

@@ -76,14 +76,12 @@ void ALDPlayerController::HandleKeyInteraction(const FHitResult& HitResult)
   {
     if (LastInteractedKey != nullptr && LastInteractedKey->IsValidLowLevel())
     {
-      //LastInteractedKey->HidePrompt_Implementation();
       IInteractable::Execute_HidePrompt(LastInteractedKey);
     }
     LastInteractedKey = KeyActor;
   }
   if (LastInteractedKey && LastInteractedKey->IsValidLowLevel())
   {
-    //LastInteractedKey->ShowPrompt_Implementation();
     IInteractable::Execute_ShowPrompt(LastInteractedKey);
   }
 
@@ -98,19 +96,18 @@ void ALDPlayerController::HandleDoorInteraction(const FHitResult& HitResult)
 {
   // Check if the hit result is a door.
   ALDDoor* Door = Cast<ALDDoor>(HitResult.GetActor());
+
   // If the door is valid and it's not the same as the current door.
   if (Door && Door != CurrentDoor)
   {
     // If there is a current door, hide its interaction widget.
     if (CurrentDoor)
     {
-      //CurrentDoor->HidePrompt_Implementation();
       IInteractable::Execute_HidePrompt(CurrentDoor);
     }
 
     // Set the current door to the new door and show its interaction widget.
     CurrentDoor = Door;
-    //CurrentDoor->ShowPrompt_Implementation();
     IInteractable::Execute_ShowPrompt(CurrentDoor);
   }
 }
@@ -119,7 +116,6 @@ void ALDPlayerController::HideKeyInteractionPrompt()
 {
   if (LastInteractedKey != nullptr && LastInteractedKey->IsValidLowLevel())
   {
-    //LastInteractedKey->HidePrompt_Implementation();
     IInteractable::Execute_HidePrompt(LastInteractedKey);
     LastInteractedKey = nullptr;
   }
@@ -130,7 +126,6 @@ void ALDPlayerController::HideDoorInteractionPrompt()
   if (CurrentDoor)
   {
     // If the player is not looking at a door but there is a current door, hide its interaction widget.
-    //CurrentDoor->HidePrompt_Implementation();
     IInteractable::Execute_HidePrompt(CurrentDoor);
     CurrentDoor = nullptr;
   }
@@ -142,17 +137,17 @@ void ALDPlayerController::SetupInputComponent()
 
   if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
   {
-    // Moving
+    //** Moving **//
     EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ALDPlayerController::Move);
 
-    // Looking
+    //** Looking **//
     EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ALDPlayerController::Look);
 
-    // Sprint
+    //** Sprint **//
     EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &ALDPlayerController::SprintTriggered);
     EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &ALDPlayerController::SprintReleased);
 
-		// Interact
+		//** Interact **//
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ALDPlayerController::OnInteractTriggered);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &ALDPlayerController::OnInteractReleased);
   }

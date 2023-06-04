@@ -58,7 +58,6 @@ void ALDKey::Tick(float DeltaTime)
 
 	// Rotate the actor.
 	AddActorLocalRotation(Rotation);
-
 }
 
 void ALDKey::OnInteract_Implementation(AActor* Caller)

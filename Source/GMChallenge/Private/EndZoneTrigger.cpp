@@ -17,7 +17,6 @@ AEndZoneTrigger::AEndZoneTrigger()
 
 	TriggerVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerVolume"));
 	RootComponent = TriggerVolume;
-
 }
 
 // Called when the game starts or when spawned
@@ -32,7 +31,6 @@ void AEndZoneTrigger::BeginPlay()
 void AEndZoneTrigger::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void AEndZoneTrigger::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -48,9 +46,6 @@ void AEndZoneTrigger::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 		{
 			CharacterMovement->MovementMode = MOVE_None;
 		}
-
-		//// Disable character movement
-		//PlayerCharacter->DisableInput(GetWorld()->GetFirstPlayerController());
 
 		// Create our end level widget and add it to the viewport
 		UUserWidget* Widget = CreateWidget<UEndLevelWidget>(GetWorld(), EndLevelWidgetClass);

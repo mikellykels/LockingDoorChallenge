@@ -17,15 +17,15 @@ class ALDCharacter : public ACharacter, public IInteractable
 {
 	GENERATED_BODY()
 
-	/** Camera boom positioning the camera behind the character */
+	//** Camera boom positioning the camera behind the character *//
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
-	/** Follow camera */
+	//** Follow camera *//
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-	/** Jump Input Action */
+	//** Jump Input Action *//
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* JumpAction;
 
@@ -38,16 +38,16 @@ public:
 	virtual TArray<FName> GetInventory_Implementation() const override;
 
 public:
-	/** Returns CameraBoom subobject **/
+	//** Returns CameraBoom subobject **//
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { 
 		return CameraBoom; 
 	}
-	/** Returns FollowCamera subobject **/
+	//** Returns FollowCamera subobject **//
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { 
 		return FollowCamera; 
 	}
 
-	/** Inventory component */
+	//** Inventory component *//
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	UInventoryComponent* InventoryComponent;
 
